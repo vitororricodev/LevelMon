@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { lovable } from "@/integrations/lovable/index";
 import { Sparkles } from "lucide-react";
-import charactersAsset from "@/assets/levelmon-characters.jpeg.asset.json";
+import { Logo } from "@/components/Logo";
 
 interface Props {
   onContinue: () => void;
@@ -24,7 +24,7 @@ export function LoginScreen({ onContinue }: Props) {
       }
       if (result.redirected) return;
       onContinue();
-    } catch (e) {
+    } catch {
       toast.error("Erro inesperado. Tente o Modo Demo.");
       setLoading(false);
     }
@@ -32,30 +32,14 @@ export function LoginScreen({ onContinue }: Props) {
 
   return (
     <div className="flex flex-col items-center justify-between h-full px-6 py-10 text-center">
-      <div />
-      <div className="flex flex-col items-center gap-6">
-        <div className="relative">
-          <div className="absolute inset-0 blur-3xl bg-primary/40 rounded-full" />
-          <div className="relative rounded-2xl overflow-hidden border border-primary/40 neon-border w-40 h-40 bg-card grid place-items-center">
-            <img
-              src={charactersAsset.url}
-              alt="LevelMon characters"
-              className="w-full h-full object-cover"
-              style={{ imageRendering: "pixelated", objectPosition: "center 45%" }}
-            />
-          </div>
-        </div>
-        <div>
-          <h1
-            className="text-4xl font-bold tracking-tight text-primary"
-            style={{ fontFamily: "var(--font-display)", letterSpacing: "0.02em" }}
-          >
-            LevelMon
-          </h1>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Seu corpo, sua aventura.
-          </p>
-        </div>
+      <div className="w-full pt-2">
+        <Logo size="lg" />
+      </div>
+
+      <div className="flex flex-col items-center gap-5">
+        <p className="text-sm text-muted-foreground max-w-xs">
+          Seu corpo, sua aventura.
+        </p>
         <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-primary/80">
           <Sparkles className="w-3 h-3" />
           <span>Saúde gamificada para gamers</span>

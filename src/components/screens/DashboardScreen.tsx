@@ -26,16 +26,19 @@ export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
   const [buffActive, setBuffActive] = useState(false);
 
 
+  const xpPerMission = buffActive ? Math.round(BASE_XP_PER_MISSION * 1.2) : BASE_XP_PER_MISSION;
+
   function toggle(i: number) {
-    if (checked[i]) return; // one-way for MVP
+    if (checked[i]) return;
     const next = [...checked];
     next[i] = true;
     setChecked(next);
-    setXp((prev) => Math.min(XP_MAX, prev + XP_PER_MISSION));
+    setXp((prev) => Math.min(XP_MAX, prev + xpPerMission));
     setPulse(true);
     setTimeout(() => setPulse(false), 800);
-    toast.success(`+${XP_PER_MISSION} XP — ${info.missions[i].title}`);
+    toast.success(`+${xpPerMission} XP — ${info.missions[i].title}`);
   }
+
 
   useEffect(() => {
     if (checked.every(Boolean)) {

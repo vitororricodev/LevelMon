@@ -1,4 +1,4 @@
-import { CLASSES, type ClassId } from "@/lib/levelmon";
+import { CLASSES, getMissions, TIER_META, type ClassId, type Tier } from "@/lib/levelmon";
 import { Droplet, Footprints, Swords, MessageCircle, Users, Eye, BookOpen, TreePine, Moon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { BackHeader } from "@/components/BackHeader";
@@ -11,13 +11,17 @@ const ICONS: Record<ClassId, LucideIcon[]> = {
 
 interface Props {
   classId: ClassId;
+  tier: Tier;
   onBack: () => void;
   onAccept: () => void;
 }
 
-export function JourneyScreen({ classId, onBack, onAccept }: Props) {
+export function JourneyScreen({ classId, tier, onBack, onAccept }: Props) {
   const info = CLASSES[classId];
   const icons = ICONS[classId];
+  const missions = getMissions(classId, tier);
+  const tierMeta = TIER_META[tier];
+
 
   return (
     <div className="flex flex-col h-full px-6 pb-8">

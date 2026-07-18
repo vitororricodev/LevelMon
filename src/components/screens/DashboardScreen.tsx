@@ -42,7 +42,7 @@ export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex
     setXp((prev) => Math.min(XP_MAX, prev + xpPerMission));
     setPulse(true);
     setTimeout(() => setPulse(false), 800);
-    toast.success(`+${xpPerMission} XP — ${info.missions[i].title}`);
+    toast.success(`+${xpPerMission} XP — ${missions[i].title}`);
   }
 
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CLASSES, type ClassId } from "@/lib/levelmon";
+import { CLASSES, getMissions, TIER_META, CLASS_TIER_EMOJI, type ClassId, type Tier } from "@/lib/levelmon";
 import { MonsterAvatar } from "@/components/MonsterAvatar";
 import { RpgBar } from "@/components/RpgBar";
 import { DailyCheckInModal } from "@/components/DailyCheckInModal";
@@ -9,14 +9,18 @@ import { Check, Flame, Home, ListChecks, Globe2, User, X, PartyPopper, Zap } fro
 interface Props {
   classId: ClassId;
   levelmonName: string;
+  tier: Tier;
+  conditioningIndex: number;
   onReset: () => void;
 }
 
 const BASE_XP_PER_MISSION = 33;
 const XP_MAX = 100;
 
-export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
+export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex, onReset }: Props) {
   const info = CLASSES[classId];
+  const missions = getMissions(classId, tier);
+  const tierMeta = TIER_META[tier];
   const [checked, setChecked] = useState<boolean[]>([false, false, false]);
   const [xp, setXp] = useState(0);
   const [level, setLevel] = useState(1);
@@ -26,7 +30,9 @@ export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
   const [buffActive, setBuffActive] = useState(false);
 
 
-  const xpPerMission = buffActive ? Math.round(BASE_XP_PER_MISSION * 1.2) : BASE_XP_PER_MISSION;
+  const tierXp = Math.round(BASE_XP_PER_MISSION * tierMeta.multiplier);
+  const xpPerMission = buffActive ? Math.round(tierXp * 1.2) : tierXp;
+
 
   function toggle(i: number) {
     if (checked[i]) return;

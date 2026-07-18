@@ -1,26 +1,8 @@
-import { Flame, Music, Leaf, type LucideIcon } from "lucide-react";
+import { Flame, Leaf, Music, type LucideIcon } from "lucide-react";
 
 export type ClassId = "gladiador" | "bardo" | "druida";
-
-export interface ClassInfo {
-  id: ClassId;
-  name: string;
-  monsterName: string;
-  tagline: string;
-  color: string; // css var name
-  emoji: string;
-  Icon: LucideIcon;
-  stats: { label: string; value: number }[];
-  missions: { title: string; desc: string }[];
-}
-
+export type EvolutionStage = "baby" | "teen" | "adult";
 export type Tier = "leve" | "moderado" | "alto";
-
-export function getTier(index: number): Tier {
-  if (index <= 3) return "leve";
-  if (index <= 7) return "moderado";
-  return "alto";
-}
 
 export const TIER_META: Record<Tier, { label: string; multiplier: number; emoji: string }> = {
   leve: { label: "Iniciante", multiplier: 1, emoji: "🌱" },
@@ -34,66 +16,197 @@ export const CLASS_TIER_EMOJI: Record<ClassId, string> = {
   druida: "🌿",
 };
 
-type Mission = { title: string; desc: string };
-
-export const MISSIONS_BY_TIER: Record<ClassId, Record<Tier, Mission[]>> = {
-  gladiador: {
-    leve: [
-      { title: "Poção de Hidratação", desc: "Beber 2L de água ao longo do dia." },
-      { title: "Caminhada Leve", desc: "Alcançar 4.000 passos." },
-      { title: "Alongamento", desc: "15 min de alongamento ou caminhada leve." },
-    ],
-    moderado: [
-      { title: "Poção de Hidratação", desc: "Beber 2.5L de água ao longo do dia." },
-      { title: "Side Quest: Caminhada", desc: "Alcançar 7.000 passos." },
-      { title: "Boss Fight: O Treino", desc: "40 min de musculação/funcional." },
-    ],
-    alto: [
-      { title: "Poção Épica", desc: "Beber 3.5L de água ao longo do dia." },
-      { title: "Corrida do Guerreiro", desc: "Corrida/Caminhada de 10.000 passos." },
-      { title: "Raid: Treino Intenso", desc: "60 min de treino + bater meta de proteínas." },
-    ],
-  },
-  bardo: {
-    leve: [
-      { title: "Mensagem de Guilda", desc: "Mandar mensagem para 1 amigo/familiar." },
-      { title: "Resposta Pendente", desc: "Responder a uma mensagem nas redes." },
-      { title: "Papo sem Tela", desc: "15 min conversando sem olhar o celular." },
-    ],
-    moderado: [
-      { title: "Chamada de Voz", desc: "Ligar (voz/vídeo) para um amigo." },
-      { title: "Refeição em Grupo", desc: "Uma refeição presencial com alguém." },
-      { title: "Olho no Olho", desc: "1h conversando presencialmente sem celular." },
-    ],
-    alto: [
-      { title: "Organizar Encontro", desc: "Marcar um encontro ou atividade em grupo." },
-      { title: "Evento da Comunidade", desc: "Participar de um evento social presencial." },
-      { title: "Tarde Offline", desc: "Uma tarde inteira offline interagindo socialmente." },
-    ],
-  },
-  druida: {
-    leve: [
-      { title: "Páginas de Sabedoria", desc: "Ler 5 páginas de um livro físico." },
-      { title: "Toque na Grama", desc: "5 min ao ar livre sem telas." },
-      { title: "Blackout Suave", desc: "Desligar telas 15 min antes de dormir." },
-    ],
-    moderado: [
-      { title: "Páginas de Sabedoria", desc: "Ler 10 páginas de um livro físico." },
-      { title: "Toque na Grama", desc: "15 min ao ar livre sem telas." },
-      { title: "Blackout Noturno", desc: "Desligar PC e celular 1h antes de dormir." },
-    ],
-    alto: [
-      { title: "Tomo Antigo", desc: "Ler 25 páginas de um livro ou documento." },
-      { title: "Detox Diurno", desc: "1h consecutiva de detox digital durante o dia." },
-      { title: "Sono Sagrado", desc: "Sem telas 2h antes de dormir." },
-    ],
-  },
-};
-
-export function getMissions(classId: ClassId, tier: Tier): Mission[] {
-  return MISSIONS_BY_TIER[classId][tier];
+export function getTier(index: number): Tier {
+  if (index <= 3) return "leve";
+  if (index <= 7) return "moderado";
+  return "alto";
 }
 
+export interface Mission {
+  id: string;
+  title: string;
+  desc: string;
+  xp: number;
+  coins: number;
+}
+
+export interface ClassInfo {
+  id: ClassId;
+  name: string;
+  monsterName: string;
+  tagline: string;
+  color: string;
+  emoji: string;
+  Icon: LucideIcon;
+  stats: { label: string; value: number }[];
+  missions: Mission[];
+}
+
+const mission = (id: string, title: string, desc: string, xp: number, coins: number): Mission => ({
+  id,
+  title,
+  desc,
+  xp,
+  coins,
+});
+
+export const CLASS_MISSIONS: Record<ClassId, Mission[]> = {
+  gladiador: [
+    mission("gladiador-hidratacao", "💧 Poção da Hidratação", "Beber 2,5L de água", 80, 20),
+    mission("gladiador-caminhada", "👟 Side Quest: Caminhada", "Caminhar 7.000 passos", 120, 30),
+    mission("gladiador-boss-fight", "💪 Boss Fight", "Treinar 40 minutos", 200, 60),
+    mission("gladiador-alongamento", "🧘 Alongamento Sagrado", "Alongar por 10 minutos", 60, 15),
+    mission("gladiador-exploracao", "🚴 Exploração", "Pedalar por 30 minutos", 180, 50),
+    mission("gladiador-sprint", "🏃 Sprint da Arena", "Correr por 20 minutos", 160, 45),
+    mission("gladiador-escadaria", "🪜 Escadaria do Castelo", "Subir 10 lances de escada", 90, 25),
+    mission("gladiador-combo-fitness", "⚡ Combo Fitness", "Fazer 50 agachamentos", 100, 30),
+    mission("gladiador-banquete", "🥗 Banquete Saudável", "Comer uma refeição saudável", 70, 20),
+    mission("gladiador-solar", "🌞 Missão Solar", "Caminhar 15 minutos ao ar livre", 90, 25),
+    mission("gladiador-descanso", "😴 Descanso do Guerreiro", "Dormir pelo menos 8 horas", 100, 30),
+    mission(
+      "gladiador-intervalo",
+      "🚶 Intervalo Ativo",
+      "Levantar e caminhar 5 minutos a cada hora",
+      80,
+      20,
+    ),
+  ],
+  bardo: [
+    mission("bardo-conexao", "🗣 Conexão de Guilda", "Conversar com um amigo", 70, 20),
+    mission("bardo-taverna", "☕ Explorando a Taverna", "Fazer uma atividade presencial", 120, 30),
+    mission("bardo-olho-no-olho", "📵 Olho no Olho", "Conversar 1 hora sem celular", 180, 50),
+    mission("bardo-chamado", "📞 Chamado do Reino", "Ligar para um familiar", 70, 20),
+    mission(
+      "bardo-cooperativa",
+      "🎲 Missão Cooperativa",
+      "Jogar um jogo de tabuleiro com alguém",
+      120,
+      35,
+    ),
+    mission("bardo-banquete", "🍽 Banquete da Guilda", "Almoçar ou jantar acompanhado", 100, 30),
+    mission("bardo-evento", "🎉 Evento da Cidade", "Participar de um evento presencial", 200, 60),
+    mission("bardo-aliado", "🤝 Novo Aliado", "Conhecer uma pessoa nova", 150, 40),
+    mission("bardo-gentileza", "❤️ Missão Gentileza", "Fazer um elogio sincero", 60, 15),
+    mission("bardo-ajuda", "🎁 Ajuda Heroica", "Ajudar alguém durante o dia", 90, 25),
+    mission("bardo-familia", "👨‍👩‍👧 Tempo em Família", "Passar 1 hora com a família", 120, 35),
+    mission(
+      "bardo-clube",
+      "📚 Clube dos Heróis",
+      "Participar de um grupo de estudos ou leitura",
+      130,
+      40,
+    ),
+  ],
+  druida: [
+    mission("druida-paginas", "📚 Páginas da Sabedoria", "Ler 10 páginas", 90, 20),
+    mission("druida-grama", "🌳 Toque na Grama", "15 min ao ar livre", 100, 30),
+    mission("druida-blackout", "🌙 Blackout Noturno", "1h sem telas antes de dormir", 210, 60),
+    mission("druida-detox", "📴 Detox Digital", "Ficar 2 horas sem redes sociais", 180, 50),
+    mission("druida-meditacao", "🧠 Meditação", "Meditar por 10 minutos", 100, 30),
+    mission("druida-arte", "🎨 Arte do Sábio", "Desenhar ou pintar por 30 minutos", 120, 35),
+    mission("druida-diario", "✍️ Diário da Jornada", "Escrever sobre o dia por 10 minutos", 90, 25),
+    mission(
+      "druida-harmonia",
+      "🎵 Harmonia Interior",
+      "Ouvir música relaxante por 20 minutos",
+      70,
+      20,
+    ),
+    mission(
+      "druida-nascer-do-sol",
+      "🌅 Nascer do Sol",
+      "Assistir ao nascer ou pôr do sol",
+      110,
+      30,
+    ),
+    mission("druida-sono", "🛏 Ritual do Sono", "Dormir antes das 23h", 120, 35),
+    mission(
+      "druida-desafio-mental",
+      "🧩 Desafio Mental",
+      "Resolver um quebra-cabeça por 20 minutos",
+      100,
+      30,
+    ),
+    mission(
+      "druida-aprendizado",
+      "📖 Aprendizado Extra",
+      "Assistir uma aula ou curso por 30 minutos",
+      150,
+      45,
+    ),
+  ],
+};
+
+export const UNIVERSAL_MISSIONS: Mission[] = [
+  mission("universal-agua", "💦 Água Extra", "Beber mais 500 ml de água", 30, 10),
+  mission("universal-ar-livre", "🌞 Ar Livre", "Ficar 20 minutos fora de casa", 80, 20),
+  mission(
+    "universal-menos-tela",
+    "📵 Menos Tela",
+    "Reduzir 1 hora do tempo de tela em relação ao dia anterior",
+    150,
+    40,
+  ),
+  mission(
+    "universal-exploracao",
+    "🚶 Exploração",
+    "Caminhar até um lugar que normalmente iria de carro",
+    120,
+    35,
+  ),
+  mission("universal-nutricao", "🍎 Nutrição", "Comer 3 frutas no dia", 90, 25),
+  mission(
+    "universal-corpo-saudavel",
+    "🚭 Corpo Saudável",
+    "Não consumir cigarro ou bebida alcoólica no dia",
+    120,
+    35,
+  ),
+  mission(
+    "universal-organizacao",
+    "🧹 Organização",
+    "Organizar o quarto ou mesa de estudos",
+    60,
+    15,
+  ),
+  mission(
+    "universal-foco",
+    "🎯 Missão Foco",
+    "Estudar ou trabalhar por 45 minutos sem interrupções",
+    140,
+    40,
+  ),
+  mission(
+    "universal-positiva",
+    "😄 Missão Positiva",
+    "Escrever 3 coisas boas que aconteceram no dia",
+    70,
+    20,
+  ),
+  mission(
+    "universal-explorador",
+    "🌍 Explorador",
+    "Conhecer um parque, praça ou lugar novo",
+    180,
+    50,
+  ),
+];
+
+/** Returns the class missions plus a stable daily sample of universal missions. */
+export function getMissions(classId: ClassId, _tier: Tier = "moderado"): Mission[] {
+  const day = Math.floor(Date.now() / 86_400_000);
+  const offset = day % UNIVERSAL_MISSIONS.length;
+  const universal = Array.from({ length: 3 }, (_, index) => {
+    return UNIVERSAL_MISSIONS[(offset + index) % UNIVERSAL_MISSIONS.length];
+  });
+  return [...CLASS_MISSIONS[classId], ...universal];
+}
+
+export function getEvolutionStage(totalXp: number): EvolutionStage {
+  if (totalXp >= 900) return "adult";
+  if (totalXp >= 300) return "teen";
+  return "baby";
+}
 
 export const CLASSES: Record<ClassId, ClassInfo> = {
   gladiador: {
@@ -110,11 +223,7 @@ export const CLASSES: Record<ClassId, ClassInfo> = {
       { label: "AGILIDADE", value: 60 },
       { label: "FOCO", value: 45 },
     ],
-    missions: [
-      { title: "Poção de Hidratação", desc: "Beber 2.5L de água ao longo do dia." },
-      { title: "Side Quest: Caminhada", desc: "Alcançar 7.000 passos." },
-      { title: "Boss Fight: O Treino", desc: "40 min de atividade física intensa." },
-    ],
+    missions: CLASS_MISSIONS.gladiador,
   },
   bardo: {
     id: "bardo",
@@ -130,11 +239,7 @@ export const CLASSES: Record<ClassId, ClassInfo> = {
       { label: "AGILIDADE", value: 65 },
       { label: "FOCO", value: 55 },
     ],
-    missions: [
-      { title: "Conexão de Guilda", desc: "Mandar mensagem ou ligar para um amigo." },
-      { title: "Explorando a Taverna", desc: "Refeição ou atividade social presencial." },
-      { title: "Olho no Olho", desc: "1h sem olhar o celular com alguém." },
-    ],
+    missions: CLASS_MISSIONS.bardo,
   },
   druida: {
     id: "druida",
@@ -150,11 +255,7 @@ export const CLASSES: Record<ClassId, ClassInfo> = {
       { label: "CARISMA", value: 55 },
       { label: "FORÇA", value: 50 },
     ],
-    missions: [
-      { title: "Páginas de Sabedoria", desc: "Ler 10 páginas de um livro físico." },
-      { title: "Toque na Grama", desc: "15 min ao ar livre sem telas." },
-      { title: "Blackout Noturno", desc: "Desligar PC e celular 1h antes de dormir." },
-    ],
+    missions: CLASS_MISSIONS.druida,
   },
 };
 
@@ -200,6 +301,6 @@ export const QUIZ: QuizQuestion[] = [
 
 export function tallyClass(answers: ClassId[]): ClassId {
   const score: Record<ClassId, number> = { gladiador: 0, bardo: 0, druida: 0 };
-  answers.forEach((a) => score[a]++);
-  return (Object.entries(score).sort((a, b) => b[1] - a[1])[0][0] as ClassId);
+  answers.forEach((answer) => score[answer]++);
+  return Object.entries(score).sort((a, b) => b[1] - a[1])[0][0] as ClassId;
 }

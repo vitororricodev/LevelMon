@@ -1,5 +1,15 @@
 import { CLASSES, getMissions, TIER_META, type ClassId, type Tier } from "@/lib/levelmon";
-import { Droplet, Footprints, Swords, MessageCircle, Users, Eye, BookOpen, TreePine, Moon } from "lucide-react";
+import {
+  Droplet,
+  Footprints,
+  Swords,
+  MessageCircle,
+  Users,
+  Eye,
+  BookOpen,
+  TreePine,
+  Moon,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { BackHeader } from "@/components/BackHeader";
 
@@ -22,18 +32,16 @@ export function JourneyScreen({ classId, tier, onBack, onAccept }: Props) {
   const missions = getMissions(classId, tier);
   const tierMeta = TIER_META[tier];
 
-
   return (
     <div className="flex flex-col h-full px-6 pb-8">
       <BackHeader onBack={onBack} />
       <div className="text-center">
-
         <p className="text-xs uppercase tracking-widest text-primary font-bold">
           Trilha Diária · Fluxo {tierMeta.label} {tierMeta.emoji}
         </p>
         <h1 className="mt-2 text-2xl font-bold">Sua Trilha Diária Sugerida</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          O foco de <b style={{ color: `var(--${info.color})` }}>{info.name}</b> é treinar {" "}
+          O foco de <b style={{ color: `var(--${info.color})` }}>{info.name}</b> é treinar{" "}
           {classId === "gladiador" && "corpo e disciplina"}
           {classId === "bardo" && "conexão e presença"}
           {classId === "druida" && "mente e natureza"}.
@@ -42,8 +50,7 @@ export function JourneyScreen({ classId, tier, onBack, onAccept }: Props) {
 
       <div className="mt-6 flex-1 flex flex-col gap-3 overflow-y-auto">
         {missions.map((m, i) => {
-
-          const Icon = icons[i];
+          const Icon = icons[i % icons.length];
           return (
             <div
               key={m.title}
@@ -62,6 +69,9 @@ export function JourneyScreen({ classId, tier, onBack, onAccept }: Props) {
               <div>
                 <p className="font-semibold text-sm">{m.title}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{m.desc}</p>
+                <p className="mt-2 text-[10px] font-bold text-primary">
+                  +{m.xp} XP&nbsp; • &nbsp;+{m.coins} moedas
+                </p>
               </div>
             </div>
           );

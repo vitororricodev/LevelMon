@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { QUIZ, tallyClass, type ClassId } from "@/lib/levelmon";
+import { CLASSES, QUIZ, type ClassId } from "@/lib/levelmon";
 import { ChevronRight, User, User2, UserCircle2 } from "lucide-react";
 import { BackHeader } from "@/components/BackHeader";
 import { MonsterAvatar, type MonsterStage } from "@/components/MonsterAvatar";
@@ -12,19 +12,19 @@ interface Props {
 }
 
 export function OnboardingScreen({ onBack, onDone }: Props) {
-  const [stage, setStage] = useState<MonsterStage | null>(null);
+  const [selectedClassId, setSelectedClassId] = useState<ClassId | null>(null);
   const [gender, setGender] = useState<Gender | null>(null);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<ClassId[]>([]);
   const [fadeKey, setFadeKey] = useState(0);
 
   function handleBack() {
-    if (!stage) {
+    if (!selectedClassId) {
       onBack();
       return;
     }
     if (!gender) {
-      setStage(null);
+      setSelectedClassId(null);
       return;
     }
     if (step === 0) {
@@ -36,11 +36,11 @@ export function OnboardingScreen({ onBack, onDone }: Props) {
     setFadeKey((k) => k + 1);
   }
 
-  if (!stage) {
-    const stages: { id: MonsterStage; label: string; detail: string }[] = [
-      { id: "baby", label: "Baby", detail: "Comece pequeno" },
-      { id: "teen", label: "Teen", detail: "Pronto para evoluir" },
-      { id: "adult", label: "Adulto", detail: "Chegue ao seu auge" },
+  if (!selectedClassId) {
+    const classes: { id: ClassId; label: string; detail: string }[] = [
+      { id: "gladiador", label: CLASSES.gladiador.name, detail: "Saúde física e movimento" },
+      { id: "bardo", label: CLASSES.bardo.name, detail: "Vida social e conexão" },
+      { id: "druida", label: CLASSES.druida.name, detail: "Foco e bem-estar mental" },
     ];
 
     return (
@@ -49,21 +49,21 @@ export function OnboardingScreen({ onBack, onDone }: Props) {
         <StepBadge current={0} total={QUIZ.length + 2} />
         <div className="mt-5 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">PERSONAGEM</p>
-          <h2 className="mt-2 text-2xl font-bold">Escolha seu baby</h2>
+          <h2 className="mt-2 text-2xl font-bold">Escolha seu avatar baby</h2>
           <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">
-            Selecione o estágio do seu Levelmon para começar a jornada.
+            Escolha uma classe para começar. Seu companheiro evolui com as missões.
           </p>
         </div>
 
         <div className="mt-6 grid grid-cols-3 gap-2.5">
-          {stages.map(({ id, label, detail }) => (
+          {classes.map(({ id, label, detail }) => (
             <button
               key={id}
-              onClick={() => setStage(id)}
+              onClick={() => setSelectedClassId(id)}
               className="group flex min-h-[205px] flex-col items-center justify-between rounded-2xl border border-border bg-card p-2.5 text-center transition hover:border-primary hover:neon-border"
             >
-              <div className="flex h-32 w-full items-center justify-center rounded-xl bg-[#0a0b12]">
-                <MonsterAvatar classId="gladiador" stage={id} size={112} />
+              <div className="flex h-32 w-full items-center justify-center rounded-xl bg-[#faefde]">
+                <MonsterAvatar classId={id} stage="baby" size={112} />
               </div>
               <div className="pt-2">
                 <p className="text-sm font-bold group-hover:text-primary">{label}</p>
@@ -121,8 +121,7 @@ export function OnboardingScreen({ onBack, onDone }: Props) {
     const next = [...answers, cls];
     setAnswers(next);
     if (step + 1 >= QUIZ.length) {
-      const winner = tallyClass(next);
-      onDone({ gender: gender!, classId: winner, stage: stage! });
+      onDone({ gender: gender!, classId: selectedClassId!, stage: "baby" });
     } else {
       setStep(step + 1);
       setFadeKey((k) => k + 1);

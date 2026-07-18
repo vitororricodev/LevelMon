@@ -1,6 +1,7 @@
 import { CLASSES, type ClassId } from "@/lib/levelmon";
 import { Droplet, Footprints, Swords, MessageCircle, Users, Eye, BookOpen, TreePine, Moon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { BackHeader } from "@/components/BackHeader";
 
 const ICONS: Record<ClassId, LucideIcon[]> = {
   gladiador: [Droplet, Footprints, Swords],
@@ -10,16 +11,19 @@ const ICONS: Record<ClassId, LucideIcon[]> = {
 
 interface Props {
   classId: ClassId;
+  onBack: () => void;
   onAccept: () => void;
 }
 
-export function JourneyScreen({ classId, onAccept }: Props) {
+export function JourneyScreen({ classId, onBack, onAccept }: Props) {
   const info = CLASSES[classId];
   const icons = ICONS[classId];
 
   return (
-    <div className="flex flex-col h-full px-6 py-8">
+    <div className="flex flex-col h-full px-6 pb-8">
+      <BackHeader onBack={onBack} />
       <div className="text-center">
+
         <p className="text-xs uppercase tracking-widest text-primary font-bold">Trilha Diária</p>
         <h1 className="mt-2 text-2xl font-bold">Sua Trilha Diária Sugerida</h1>
         <p className="mt-2 text-sm text-muted-foreground">

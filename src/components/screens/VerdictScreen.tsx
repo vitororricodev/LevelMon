@@ -2,14 +2,17 @@ import { useEffect, useState } from "react";
 import { CLASSES, type ClassId } from "@/lib/levelmon";
 import { MonsterAvatar, EggAvatar } from "@/components/MonsterAvatar";
 import { RpgBar } from "@/components/RpgBar";
+import { BackHeader } from "@/components/BackHeader";
 import { Sparkles } from "lucide-react";
 
 interface Props {
   classId: ClassId;
+  levelmonName: string;
+  onBack: () => void;
   onContinue: () => void;
 }
 
-export function VerdictScreen({ classId, onContinue }: Props) {
+export function VerdictScreen({ classId, levelmonName, onBack, onContinue }: Props) {
   const [phase, setPhase] = useState<"loading" | "hatching" | "revealed">("loading");
   const info = CLASSES[classId];
 
@@ -20,7 +23,10 @@ export function VerdictScreen({ classId, onContinue }: Props) {
   }, []);
 
   return (
-    <div className="flex flex-col h-full px-6 py-8 items-center text-center">
+    <div className="flex flex-col h-full px-6 pb-8 items-center text-center">
+      <div className="w-full">
+        <BackHeader onBack={onBack} />
+      </div>
       <div className="flex-1 flex flex-col items-center justify-center gap-6">
         {phase !== "revealed" ? (
           <>
@@ -47,12 +53,13 @@ export function VerdictScreen({ classId, onContinue }: Props) {
               </div>
               <h1
                 className="mt-2 text-3xl font-bold"
-                style={{ color: `var(--${info.color})`, fontFamily: "var(--font-display)", letterSpacing: "0.02em" }}
+                style={{ color: `var(--${info.color})`, fontFamily: "Orbitron, var(--font-display)", letterSpacing: "0.03em" }}
               >
                 {info.name}
               </h1>
               <p className="mt-2 text-sm text-muted-foreground max-w-xs">
-                Sua energia ressoa com <b>{info.name}</b>. Seu Levelmon inicial foi gerado.
+                <b className="text-foreground">{levelmonName}</b> nasceu! Sua energia ressoa com{" "}
+                <b>{info.name}</b>.
               </p>
             </div>
 
@@ -60,7 +67,7 @@ export function VerdictScreen({ classId, onContinue }: Props) {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Levelmon</p>
-                  <p className="text-lg font-bold">{info.monsterName}</p>
+                  <p className="text-lg font-bold">{levelmonName}</p>
                 </div>
                 <span
                   className="text-xs px-2 py-1 rounded-md font-bold"

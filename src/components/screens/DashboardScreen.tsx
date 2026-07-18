@@ -118,7 +118,7 @@ export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex
           </span>
         </div>
         <div className="flex flex-col gap-2.5">
-          {info.missions.map((m, i) => (
+          {missions.map((m, i) => (
             <button
               key={m.title}
               onClick={() => toggle(i)}

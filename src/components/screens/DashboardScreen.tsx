@@ -72,6 +72,18 @@ export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex
                   {info.name}
                 </p>
                 <h2 className="text-lg font-bold truncate">{levelmonName}</h2>
+                <div
+                  className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-widest font-bold border"
+                  style={{
+                    borderColor: `color-mix(in oklab, var(--${info.color}) 50%, transparent)`,
+                    background: `color-mix(in oklab, var(--${info.color}) 12%, transparent)`,
+                    color: `var(--${info.color})`,
+                  }}
+                  title={`Índice de condicionamento: ${conditioningIndex}/10`}
+                >
+                  Modo: {info.name} {tierMeta.label} {CLASS_TIER_EMOJI[classId]}
+                </div>
+
               </div>
               <div
                 className="text-xs px-2.5 py-1 rounded-md font-bold shrink-0"

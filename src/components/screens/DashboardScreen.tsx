@@ -145,7 +145,7 @@ export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
                   color: `var(--xp)`,
                 }}
               >
-                +{XP_PER_MISSION} XP
+                +{xpPerMission} XP
               </span>
             </button>
           ))}
@@ -202,7 +202,7 @@ export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
               LEVEL UP!
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              {info.monsterName} evoluiu para <b className="text-foreground">Lvl {level}</b>.
+              {levelmonName} evoluiu para <b className="text-foreground">Lvl {level}</b>.
               <br />Seu monstro ganhou poder!
             </p>
             <div className="mt-4 flex justify-center" style={{ color: `var(--${info.color})` }}>

@@ -3,23 +3,28 @@ import { toast } from "sonner";
 import { CLASSES, type ClassId } from "@/lib/levelmon";
 import { MonsterAvatar } from "@/components/MonsterAvatar";
 import { RpgBar } from "@/components/RpgBar";
-import { Check, Flame, Home, ListChecks, Globe2, User, X, PartyPopper } from "lucide-react";
+import { DailyCheckInModal } from "@/components/DailyCheckInModal";
+import { Check, Flame, Home, ListChecks, Globe2, User, X, PartyPopper, Zap } from "lucide-react";
 
 interface Props {
   classId: ClassId;
+  levelmonName: string;
   onReset: () => void;
 }
 
-const XP_PER_MISSION = 33;
+const BASE_XP_PER_MISSION = 33;
 const XP_MAX = 100;
 
-export function DashboardScreen({ classId, onReset }: Props) {
+export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
   const info = CLASSES[classId];
   const [checked, setChecked] = useState<boolean[]>([false, false, false]);
   const [xp, setXp] = useState(0);
   const [level, setLevel] = useState(1);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [pulse, setPulse] = useState(false);
+  const [showDaily, setShowDaily] = useState(true);
+  const [buffActive, setBuffActive] = useState(false);
+
 
   function toggle(i: number) {
     if (checked[i]) return; // one-way for MVP

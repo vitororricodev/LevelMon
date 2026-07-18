@@ -65,7 +65,7 @@ export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                   {info.name}
                 </p>
-                <h2 className="text-lg font-bold truncate">{info.monsterName}</h2>
+                <h2 className="text-lg font-bold truncate">{levelmonName}</h2>
               </div>
               <div
                 className="text-xs px-2.5 py-1 rounded-md font-bold shrink-0"
@@ -83,11 +83,17 @@ export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-2 text-xs">
+        <div className="mt-4 flex items-center gap-2 text-xs flex-wrap">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary border border-border">
             <Flame className="w-3.5 h-3.5 text-orange-400" />
             <span className="font-semibold">Sequência: 1 dia</span>
           </div>
+          {buffActive && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/20 border border-primary/50 text-primary animate-in fade-in zoom-in-95 duration-300">
+              <Zap className="w-3.5 h-3.5" />
+              <span className="font-bold">Buff de Login Ativo ⚡</span>
+            </div>
+          )}
           <button
             onClick={onReset}
             className="ml-auto text-[10px] uppercase tracking-widest text-muted-foreground hover:text-primary"

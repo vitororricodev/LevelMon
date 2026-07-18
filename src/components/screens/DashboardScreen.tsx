@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CLASSES, getMissions, TIER_META, CLASS_TIER_EMOJI, type ClassId, type Tier } from "@/lib/levelmon";
-import { MonsterAvatar } from "@/components/MonsterAvatar";
+import {
+  CLASSES,
+  getMissions,
+  TIER_META,
+  CLASS_TIER_EMOJI,
+  type ClassId,
+  type Tier,
+} from "@/lib/levelmon";
+import { MonsterAvatar, MonsterProfileHero, type MonsterStage } from "@/components/MonsterAvatar";
 import { RpgBar } from "@/components/RpgBar";
 import { DailyCheckInModal } from "@/components/DailyCheckInModal";
 import { Check, Flame, Home, ListChecks, Globe2, User, X, PartyPopper, Zap } from "lucide-react";
 
 interface Props {
   classId: ClassId;
+  stage: MonsterStage;
   levelmonName: string;
   tier: Tier;
   conditioningIndex: number;
@@ -17,7 +25,14 @@ interface Props {
 const BASE_XP_PER_MISSION = 33;
 const XP_MAX = 100;
 
-export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex, onReset }: Props) {
+export function DashboardScreen({
+  classId,
+  stage,
+  levelmonName,
+  tier,
+  conditioningIndex,
+  onReset,
+}: Props) {
   const info = CLASSES[classId];
   const missions = getMissions(classId, tier);
   const tierMeta = TIER_META[tier];
@@ -29,10 +44,8 @@ export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex
   const [showDaily, setShowDaily] = useState(true);
   const [buffActive, setBuffActive] = useState(false);
 
-
   const tierXp = Math.round(BASE_XP_PER_MISSION * tierMeta.multiplier);
   const xpPerMission = buffActive ? Math.round(tierXp * 1.2) : tierXp;
-
 
   function toggle(i: number) {
     if (checked[i]) return;
@@ -44,7 +57,6 @@ export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex
     setTimeout(() => setPulse(false), 800);
     toast.success(`+${xpPerMission} XP — ${missions[i].title}`);
   }
-
 
   useEffect(() => {
     if (checked.every(Boolean)) {
@@ -59,11 +71,52 @@ export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex
 
   return (
     <div className="flex flex-col h-full">
+      <MonsterProfileHero
+        classId={classId}
+        stage={stage}
+        name={levelmonName}
+        className={info.name}
+        level={level}
+        xp={xp}
+        xpMax={XP_MAX}
+        stats={info.stats}
+      />
+
+      <div className="flex flex-wrap items-center gap-2 px-5 py-3 text-xs">
+        <div className="flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1">
+          <Flame className="h-3.5 w-3.5 text-orange-400" />
+          <span className="font-semibold">Sequência: 1 dia</span>
+        </div>
+        <div
+          className="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest"
+          style={{
+            borderColor: `color-mix(in oklab, var(--${info.color}) 50%, transparent)`,
+            background: `color-mix(in oklab, var(--${info.color}) 12%, transparent)`,
+            color: `var(--${info.color})`,
+          }}
+          title={`Índice de condicionamento: ${conditioningIndex}/10`}
+        >
+          Modo: {info.name} {tierMeta.label} {CLASS_TIER_EMOJI[classId]}
+        </div>
+        {buffActive && (
+          <div className="flex items-center gap-1.5 rounded-full border border-primary/50 bg-primary/20 px-2.5 py-1 text-primary animate-in fade-in zoom-in-95 duration-300">
+            <Zap className="h-3.5 w-3.5" />
+            <span className="font-bold">Buff de Login Ativo ⚡</span>
+          </div>
+        )}
+        <button
+          onClick={onReset}
+          className="ml-auto text-[10px] uppercase tracking-widest text-muted-foreground hover:text-primary"
+        >
+          reiniciar
+        </button>
+      </div>
+
       {/* Header */}
-      <div className="px-5 pt-6 pb-4">
+      <div className="hidden px-5 pt-6 pb-4">
         <div className="flex items-center gap-4">
           <div className="shrink-0" style={{ color: `var(--${info.color})` }}>
-            <MonsterAvatar classId={classId} size={72} />
+            <MonsterAvatar classId={classId} stage={stage} size={72} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
@@ -83,7 +136,6 @@ export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex
                 >
                   Modo: {info.name} {tierMeta.label} {CLASS_TIER_EMOJI[classId]}
                 </div>
-
               </div>
               <div
                 className="text-xs px-2.5 py-1 rounded-md font-bold shrink-0"
@@ -125,9 +177,7 @@ export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex
       <div className="flex-1 overflow-y-auto px-5 pb-24">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-bold uppercase tracking-wider">Missões de Hoje</h3>
-          <span className="text-xs text-muted-foreground">
-            {checked.filter(Boolean).length}/3
-          </span>
+          <span className="text-xs text-muted-foreground">{checked.filter(Boolean).length}/3</span>
         </div>
         <div className="flex flex-col gap-2.5">
           {missions.map((m, i) => (
@@ -169,7 +219,7 @@ export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex
           ))}
         </div>
 
-        <div className="mt-6 p-4 rounded-2xl bg-card/60 border border-dashed border-border">
+        <div className="hidden mt-6 p-4 rounded-2xl bg-card/60 border border-dashed border-border">
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
             Atributos do Levelmon
           </p>
@@ -216,15 +266,19 @@ export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex
             <div className="flex justify-center mb-2 text-primary">
               <PartyPopper className="w-10 h-10" />
             </div>
-            <h2 className="text-2xl font-bold text-primary" style={{ fontFamily: "var(--font-display)" }}>
+            <h2
+              className="text-2xl font-bold text-primary"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
               LEVEL UP!
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               {levelmonName} evoluiu para <b className="text-foreground">Lvl {level}</b>.
-              <br />Seu monstro ganhou poder!
+              <br />
+              Seu monstro ganhou poder!
             </p>
             <div className="mt-4 flex justify-center" style={{ color: `var(--${info.color})` }}>
-              <MonsterAvatar classId={classId} size={110} />
+              <MonsterAvatar classId={classId} stage={stage} size={110} />
             </div>
             <button
               onClick={() => setShowLevelUp(false)}
@@ -250,4 +304,3 @@ export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex
     </div>
   );
 }
-

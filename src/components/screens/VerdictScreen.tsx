@@ -1,25 +1,29 @@
 import { useEffect, useState } from "react";
 import { CLASSES, type ClassId } from "@/lib/levelmon";
-import { MonsterAvatar, EggAvatar } from "@/components/MonsterAvatar";
+import { MonsterAvatar, EggAvatar, type MonsterStage } from "@/components/MonsterAvatar";
 import { RpgBar } from "@/components/RpgBar";
 import { BackHeader } from "@/components/BackHeader";
 import { Sparkles } from "lucide-react";
 
 interface Props {
   classId: ClassId;
+  stage: MonsterStage;
   levelmonName: string;
   onBack: () => void;
   onContinue: () => void;
 }
 
-export function VerdictScreen({ classId, levelmonName, onBack, onContinue }: Props) {
+export function VerdictScreen({ classId, stage, levelmonName, onBack, onContinue }: Props) {
   const [phase, setPhase] = useState<"loading" | "hatching" | "revealed">("loading");
   const info = CLASSES[classId];
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase("hatching"), 1200);
     const t2 = setTimeout(() => setPhase("revealed"), 2800);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
   return (
@@ -35,15 +39,13 @@ export function VerdictScreen({ classId, levelmonName, onBack, onContinue }: Pro
               <p className="text-xs uppercase tracking-widest text-primary animate-pulse">
                 Sincronizando dados...
               </p>
-              <p className="text-sm text-muted-foreground">
-                Sua energia está sendo lida...
-              </p>
+              <p className="text-sm text-muted-foreground">Sua energia está sendo lida...</p>
             </div>
           </>
         ) : (
           <div className="animate-in fade-in zoom-in-95 duration-700 flex flex-col items-center gap-4">
             <div className="animate-glow" style={{ color: `var(--${info.color})` }}>
-              <MonsterAvatar classId={classId} size={160} />
+              <MonsterAvatar classId={classId} stage={stage} size={160} />
             </div>
             <div>
               <div className="flex items-center justify-center gap-1.5 text-xs uppercase tracking-widest text-muted-foreground">
@@ -53,7 +55,11 @@ export function VerdictScreen({ classId, levelmonName, onBack, onContinue }: Pro
               </div>
               <h1
                 className="mt-2 text-3xl font-bold"
-                style={{ color: `var(--${info.color})`, fontFamily: "Orbitron, var(--font-display)", letterSpacing: "0.03em" }}
+                style={{
+                  color: `var(--${info.color})`,
+                  fontFamily: "Orbitron, var(--font-display)",
+                  letterSpacing: "0.03em",
+                }}
               >
                 {info.name}
               </h1>
@@ -66,7 +72,9 @@ export function VerdictScreen({ classId, levelmonName, onBack, onContinue }: Pro
             <div className="w-full mt-2 rounded-2xl bg-card border border-border p-5 space-y-3 text-left">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Levelmon</p>
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                    Levelmon
+                  </p>
                   <p className="text-lg font-bold">{levelmonName}</p>
                 </div>
                 <span

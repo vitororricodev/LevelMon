@@ -8,6 +8,7 @@ import { VerdictScreen } from "@/components/screens/VerdictScreen";
 import { ConditioningScreen } from "@/components/screens/ConditioningScreen";
 import { JourneyScreen } from "@/components/screens/JourneyScreen";
 import { DashboardScreen } from "@/components/screens/DashboardScreen";
+import type { MonsterStage } from "@/components/MonsterAvatar";
 import type { ClassId, Tier } from "@/lib/levelmon";
 
 export const Route = createFileRoute("/")({
@@ -15,17 +16,12 @@ export const Route = createFileRoute("/")({
 });
 
 type Step =
-  | "login"
-  | "onboarding"
-  | "naming"
-  | "verdict"
-  | "conditioning"
-  | "journey"
-  | "dashboard";
+  "login" | "onboarding" | "naming" | "verdict" | "conditioning" | "journey" | "dashboard";
 
 function LevelMonApp() {
   const [step, setStep] = useState<Step>("login");
   const [classId, setClassId] = useState<ClassId | null>(null);
+  const [monsterStage, setMonsterStage] = useState<MonsterStage>("baby");
   const [levelmonName, setLevelmonName] = useState<string>("");
   const [tier, setTier] = useState<Tier>("moderado");
   const [conditioningIndex, setConditioningIndex] = useState<number>(5);
@@ -36,8 +32,9 @@ function LevelMonApp() {
       {step === "onboarding" && (
         <OnboardingScreen
           onBack={() => setStep("login")}
-          onDone={({ classId }) => {
+          onDone={({ classId, stage }) => {
             setClassId(classId);
+            setMonsterStage(stage);
             setStep("naming");
           }}
         />
@@ -55,6 +52,7 @@ function LevelMonApp() {
       {step === "verdict" && classId && (
         <VerdictScreen
           classId={classId}
+          stage={monsterStage}
           levelmonName={levelmonName}
           onBack={() => setStep("naming")}
           onContinue={() => setStep("conditioning")}
@@ -83,6 +81,7 @@ function LevelMonApp() {
       {step === "dashboard" && classId && (
         <DashboardScreen
           classId={classId}
+          stage={monsterStage}
           levelmonName={levelmonName}
           tier={tier}
           conditioningIndex={conditioningIndex}

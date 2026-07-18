@@ -1,22 +1,39 @@
 import { useState } from "react";
 import { QUIZ, tallyClass, type ClassId } from "@/lib/levelmon";
 import { ChevronRight, User, User2, UserCircle2 } from "lucide-react";
+import { BackHeader } from "@/components/BackHeader";
 
 type Gender = "masc" | "fem" | "outros";
 
 interface Props {
+  onBack: () => void;
   onDone: (result: { gender: Gender; classId: ClassId }) => void;
 }
 
-export function OnboardingScreen({ onDone }: Props) {
+export function OnboardingScreen({ onBack, onDone }: Props) {
   const [gender, setGender] = useState<Gender | null>(null);
-  const [step, setStep] = useState(0); // 0..QUIZ.length-1
+  const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<ClassId[]>([]);
   const [fadeKey, setFadeKey] = useState(0);
 
+  function handleBack() {
+    if (!gender) {
+      onBack();
+      return;
+    }
+    if (step === 0) {
+      setGender(null);
+      return;
+    }
+    setAnswers((a) => a.slice(0, -1));
+    setStep((s) => s - 1);
+    setFadeKey((k) => k + 1);
+  }
+
   if (!gender) {
     return (
-      <div className="flex flex-col h-full px-6 py-8">
+      <div className="flex flex-col h-full px-6 pb-8">
+        <BackHeader onBack={handleBack} />
         <StepBadge current={0} total={QUIZ.length + 1} />
         <h2 className="mt-4 text-2xl font-bold">Escolha seu avatar</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -60,7 +77,8 @@ export function OnboardingScreen({ onDone }: Props) {
   }
 
   return (
-    <div className="flex flex-col h-full px-6 py-8">
+    <div className="flex flex-col h-full px-6 pb-8">
+      <BackHeader onBack={handleBack} />
       <StepBadge current={step + 1} total={QUIZ.length + 1} />
       <div key={fadeKey} className="mt-6 animate-in fade-in slide-in-from-bottom-3 duration-500">
         <p className="text-xs uppercase tracking-widest text-primary font-bold">

@@ -3,34 +3,42 @@ import { toast } from "sonner";
 import { CLASSES, type ClassId } from "@/lib/levelmon";
 import { MonsterAvatar } from "@/components/MonsterAvatar";
 import { RpgBar } from "@/components/RpgBar";
-import { Check, Flame, Home, ListChecks, Globe2, User, X, PartyPopper } from "lucide-react";
+import { DailyCheckInModal } from "@/components/DailyCheckInModal";
+import { Check, Flame, Home, ListChecks, Globe2, User, X, PartyPopper, Zap } from "lucide-react";
 
 interface Props {
   classId: ClassId;
+  levelmonName: string;
   onReset: () => void;
 }
 
-const XP_PER_MISSION = 33;
+const BASE_XP_PER_MISSION = 33;
 const XP_MAX = 100;
 
-export function DashboardScreen({ classId, onReset }: Props) {
+export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
   const info = CLASSES[classId];
   const [checked, setChecked] = useState<boolean[]>([false, false, false]);
   const [xp, setXp] = useState(0);
   const [level, setLevel] = useState(1);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [pulse, setPulse] = useState(false);
+  const [showDaily, setShowDaily] = useState(true);
+  const [buffActive, setBuffActive] = useState(false);
+
+
+  const xpPerMission = buffActive ? Math.round(BASE_XP_PER_MISSION * 1.2) : BASE_XP_PER_MISSION;
 
   function toggle(i: number) {
-    if (checked[i]) return; // one-way for MVP
+    if (checked[i]) return;
     const next = [...checked];
     next[i] = true;
     setChecked(next);
-    setXp((prev) => Math.min(XP_MAX, prev + XP_PER_MISSION));
+    setXp((prev) => Math.min(XP_MAX, prev + xpPerMission));
     setPulse(true);
     setTimeout(() => setPulse(false), 800);
-    toast.success(`+${XP_PER_MISSION} XP — ${info.missions[i].title}`);
+    toast.success(`+${xpPerMission} XP — ${info.missions[i].title}`);
   }
+
 
   useEffect(() => {
     if (checked.every(Boolean)) {
@@ -57,7 +65,7 @@ export function DashboardScreen({ classId, onReset }: Props) {
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                   {info.name}
                 </p>
-                <h2 className="text-lg font-bold truncate">{info.monsterName}</h2>
+                <h2 className="text-lg font-bold truncate">{levelmonName}</h2>
               </div>
               <div
                 className="text-xs px-2.5 py-1 rounded-md font-bold shrink-0"
@@ -75,11 +83,17 @@ export function DashboardScreen({ classId, onReset }: Props) {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-2 text-xs">
+        <div className="mt-4 flex items-center gap-2 text-xs flex-wrap">
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary border border-border">
             <Flame className="w-3.5 h-3.5 text-orange-400" />
             <span className="font-semibold">Sequência: 1 dia</span>
           </div>
+          {buffActive && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/20 border border-primary/50 text-primary animate-in fade-in zoom-in-95 duration-300">
+              <Zap className="w-3.5 h-3.5" />
+              <span className="font-bold">Buff de Login Ativo ⚡</span>
+            </div>
+          )}
           <button
             onClick={onReset}
             className="ml-auto text-[10px] uppercase tracking-widest text-muted-foreground hover:text-primary"
@@ -131,7 +145,7 @@ export function DashboardScreen({ classId, onReset }: Props) {
                   color: `var(--xp)`,
                 }}
               >
-                +{XP_PER_MISSION} XP
+                +{xpPerMission} XP
               </span>
             </button>
           ))}
@@ -188,7 +202,7 @@ export function DashboardScreen({ classId, onReset }: Props) {
               LEVEL UP!
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              {info.monsterName} evoluiu para <b className="text-foreground">Lvl {level}</b>.
+              {levelmonName} evoluiu para <b className="text-foreground">Lvl {level}</b>.
               <br />Seu monstro ganhou poder!
             </p>
             <div className="mt-4 flex justify-center" style={{ color: `var(--${info.color})` }}>
@@ -203,6 +217,19 @@ export function DashboardScreen({ classId, onReset }: Props) {
           </div>
         </div>
       )}
+
+      {showDaily && (
+        <DailyCheckInModal
+          currentDay={1}
+          onClose={() => setShowDaily(false)}
+          onCollect={() => {
+            setBuffActive(true);
+            setShowDaily(false);
+            toast.success("BUFF de +20% XP ativado! ⚡");
+          }}
+        />
+      )}
     </div>
   );
 }
+

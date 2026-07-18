@@ -1,24 +1,43 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { PhoneFrame } from "@/components/PhoneFrame";
+import { LoginScreen } from "@/components/screens/LoginScreen";
+import { OnboardingScreen } from "@/components/screens/OnboardingScreen";
+import { VerdictScreen } from "@/components/screens/VerdictScreen";
+import { JourneyScreen } from "@/components/screens/JourneyScreen";
+import { DashboardScreen } from "@/components/screens/DashboardScreen";
+import type { ClassId } from "@/lib/levelmon";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  component: LevelMonApp,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+type Step = "login" | "onboarding" | "verdict" | "journey" | "dashboard";
+
+function LevelMonApp() {
+  const [step, setStep] = useState<Step>("login");
+  const [classId, setClassId] = useState<ClassId | null>(null);
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <PhoneFrame>
+      {step === "login" && <LoginScreen onContinue={() => setStep("onboarding")} />}
+      {step === "onboarding" && (
+        <OnboardingScreen
+          onDone={({ classId }) => {
+            setClassId(classId);
+            setStep("verdict");
+          }}
+        />
+      )}
+      {step === "verdict" && classId && (
+        <VerdictScreen classId={classId} onContinue={() => setStep("journey")} />
+      )}
+      {step === "journey" && classId && (
+        <JourneyScreen classId={classId} onAccept={() => setStep("dashboard")} />
+      )}
+      {step === "dashboard" && classId && (
+        <DashboardScreen classId={classId} onReset={() => setStep("login")} />
+      )}
+    </PhoneFrame>
   );
 }

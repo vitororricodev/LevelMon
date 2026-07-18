@@ -3,10 +3,22 @@ import { Flame, HeartPulse, Shield, Zap, type LucideIcon } from "lucide-react";
 
 export type MonsterStage = "baby" | "teen" | "adult";
 
-const GLADIADOR_ART: Record<MonsterStage, string> = {
-  baby: "/gladiador-baby.gif",
-  teen: "/gladiador-teen.gif",
-  adult: "/gladiador-adult.gif",
+const AVATAR_ART: Record<ClassId, Record<MonsterStage, string>> = {
+  gladiador: {
+    baby: "/gladiador-baby.gif",
+    teen: "/gladiador-teen.gif",
+    adult: "/gladiador-adult.gif",
+  },
+  bardo: {
+    baby: "/bardo-baby.gif",
+    teen: "/bardo-teen.gif",
+    adult: "/bardo-adult.gif",
+  },
+  druida: {
+    baby: "/druida-baby.gif",
+    teen: "/druida-teen.gif",
+    adult: "/druida-adult.gif",
+  },
 };
 
 /** Monster art per class and evolution stage. */
@@ -33,8 +45,8 @@ export function MonsterAvatar({
       }}
     >
       <img
-        src={GLADIADOR_ART[stage]}
-        alt={`Gladiador ${stage}`}
+        src={AVATAR_ART[classId][stage]}
+        alt={`${classId} ${stage}`}
         className="h-full w-full object-contain"
         draggable={false}
       />

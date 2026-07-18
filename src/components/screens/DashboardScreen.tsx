@@ -1,17 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   CLASSES,
+  getEvolutionStage,
   getMissions,
   TIER_META,
-  CLASS_TIER_EMOJI,
   type ClassId,
   type Tier,
 } from "@/lib/levelmon";
 import { MonsterAvatar, MonsterProfileHero, type MonsterStage } from "@/components/MonsterAvatar";
-import { RpgBar } from "@/components/RpgBar";
 import { DailyCheckInModal } from "@/components/DailyCheckInModal";
-import { Check, Flame, Home, ListChecks, Globe2, User, X, PartyPopper, Zap } from "lucide-react";
+import {
+  Check,
+  Flame,
+  Home,
+  ListChecks,
+  Globe2,
+  User,
+  X,
+  PartyPopper,
+  Zap,
+  Coins,
+} from "lucide-react";
 
 interface Props {
   classId: ClassId;
@@ -22,8 +32,9 @@ interface Props {
   onReset: () => void;
 }
 
-const BASE_XP_PER_MISSION = 33;
 const XP_MAX = 100;
+const INITIAL_XP_BY_STAGE: Record<MonsterStage, number> = { baby: 0, teen: 300, adult: 900 };
+const STAGE_LABELS: Record<MonsterStage, string> = { baby: "Baby", teen: "Teen", adult: "Adulto" };
 
 export function DashboardScreen({
   classId,
@@ -36,44 +47,41 @@ export function DashboardScreen({
   const info = CLASSES[classId];
   const missions = getMissions(classId, tier);
   const tierMeta = TIER_META[tier];
-  const [checked, setChecked] = useState<boolean[]>([false, false, false]);
-  const [xp, setXp] = useState(0);
-  const [level, setLevel] = useState(1);
+  const [checked, setChecked] = useState<boolean[]>(() => missions.map(() => false));
+  const [totalXp, setTotalXp] = useState(() => INITIAL_XP_BY_STAGE[stage]);
+  const [coins, setCoins] = useState(0);
   const [showLevelUp, setShowLevelUp] = useState(false);
-  const [pulse, setPulse] = useState(false);
   const [showDaily, setShowDaily] = useState(true);
   const [buffActive, setBuffActive] = useState(false);
-
-  const tierXp = Math.round(BASE_XP_PER_MISSION * tierMeta.multiplier);
-  const xpPerMission = buffActive ? Math.round(tierXp * 1.2) : tierXp;
-
-  function toggle(i: number) {
-    if (checked[i]) return;
-    const next = [...checked];
-    next[i] = true;
-    setChecked(next);
-    setXp((prev) => Math.min(XP_MAX, prev + xpPerMission));
-    setPulse(true);
-    setTimeout(() => setPulse(false), 800);
-    toast.success(`+${xpPerMission} XP — ${missions[i].title}`);
-  }
+  const currentStage = getEvolutionStage(totalXp);
+  const previousStage = useRef(currentStage);
+  const level = Math.floor(totalXp / XP_MAX) + 1;
+  const xp = totalXp % XP_MAX;
 
   useEffect(() => {
-    if (checked.every(Boolean)) {
-      const t = setTimeout(() => {
-        setLevel((l) => l + 1);
-        setXp(0);
-        setShowLevelUp(true);
-      }, 900);
-      return () => clearTimeout(t);
+    if (previousStage.current !== currentStage) {
+      previousStage.current = currentStage;
+      setShowLevelUp(true);
     }
-  }, [checked]);
+  }, [currentStage]);
+
+  function toggle(index: number) {
+    if (checked[index]) return;
+    const mission = missions[index];
+    const rewardXp = buffActive ? Math.round(mission.xp * 1.2) : mission.xp;
+    const next = [...checked];
+    next[index] = true;
+    setChecked(next);
+    setTotalXp((value) => value + rewardXp);
+    setCoins((value) => value + mission.coins);
+    toast.success(`+${rewardXp} XP • +${mission.coins} moedas — ${mission.title}`);
+  }
 
   return (
     <div className="flex flex-col h-full">
       <MonsterProfileHero
         classId={classId}
-        stage={stage}
+        stage={currentStage}
         name={levelmonName}
         className={info.name}
         level={level}
@@ -87,21 +95,17 @@ export function DashboardScreen({
           <Flame className="h-3.5 w-3.5 text-orange-400" />
           <span className="font-semibold">Sequência: 1 dia</span>
         </div>
-        <div
-          className="inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest"
-          style={{
-            borderColor: `color-mix(in oklab, var(--${info.color}) 50%, transparent)`,
-            background: `color-mix(in oklab, var(--${info.color}) 12%, transparent)`,
-            color: `var(--${info.color})`,
-          }}
-          title={`Índice de condicionamento: ${conditioningIndex}/10`}
-        >
-          Modo: {info.name} {tierMeta.label} {CLASS_TIER_EMOJI[classId]}
+        <div className="flex items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 py-1">
+          <Coins className="h-3.5 w-3.5 text-amber-400" />
+          <span className="font-semibold">{coins} moedas</span>
+        </div>
+        <div className="rounded-full border border-border bg-secondary px-2.5 py-1 font-semibold">
+          Fluxo {tierMeta.label} {tierMeta.emoji} · {conditioningIndex}/10
         </div>
         {buffActive && (
           <div className="flex items-center gap-1.5 rounded-full border border-primary/50 bg-primary/20 px-2.5 py-1 text-primary animate-in fade-in zoom-in-95 duration-300">
             <Zap className="h-3.5 w-3.5" />
-            <span className="font-bold">Buff de Login Ativo ⚡</span>
+            <span className="font-bold">Buff de Login Ativo</span>
           </div>
         )}
         <button
@@ -112,128 +116,62 @@ export function DashboardScreen({
         </button>
       </div>
 
-      {/* Header */}
-      <div className="hidden px-5 pt-6 pb-4">
-        <div className="flex items-center gap-4">
-          <div className="shrink-0" style={{ color: `var(--${info.color})` }}>
-            <MonsterAvatar classId={classId} stage={stage} size={72} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                  {info.name}
-                </p>
-                <h2 className="text-lg font-bold truncate">{levelmonName}</h2>
-                <div
-                  className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-widest font-bold border"
-                  style={{
-                    borderColor: `color-mix(in oklab, var(--${info.color}) 50%, transparent)`,
-                    background: `color-mix(in oklab, var(--${info.color}) 12%, transparent)`,
-                    color: `var(--${info.color})`,
-                  }}
-                  title={`Índice de condicionamento: ${conditioningIndex}/10`}
-                >
-                  Modo: {info.name} {tierMeta.label} {CLASS_TIER_EMOJI[classId]}
-                </div>
-              </div>
-              <div
-                className="text-xs px-2.5 py-1 rounded-md font-bold shrink-0"
-                style={{
-                  background: `color-mix(in oklab, var(--${info.color}) 20%, transparent)`,
-                  color: `var(--${info.color})`,
-                }}
-              >
-                Lvl {level}
-              </div>
-            </div>
-            <div className={`mt-2 ${pulse ? "animate-glow" : ""}`} style={{ color: "var(--xp)" }}>
-              <RpgBar value={xp} max={XP_MAX} color="xp" showValue label="XP" />
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-4 flex items-center gap-2 text-xs flex-wrap">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary border border-border">
-            <Flame className="w-3.5 h-3.5 text-orange-400" />
-            <span className="font-semibold">Sequência: 1 dia</span>
-          </div>
-          {buffActive && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/20 border border-primary/50 text-primary animate-in fade-in zoom-in-95 duration-300">
-              <Zap className="w-3.5 h-3.5" />
-              <span className="font-bold">Buff de Login Ativo ⚡</span>
-            </div>
-          )}
-          <button
-            onClick={onReset}
-            className="ml-auto text-[10px] uppercase tracking-widest text-muted-foreground hover:text-primary"
-          >
-            reiniciar
-          </button>
-        </div>
-      </div>
-
-      {/* Missions */}
       <div className="flex-1 overflow-y-auto px-5 pb-24">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold uppercase tracking-wider">Missões de Hoje</h3>
-          <span className="text-xs text-muted-foreground">{checked.filter(Boolean).length}/3</span>
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wider">Missões de Hoje</h3>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Complete missões para evoluir de Baby para Teen e Adulto.
+            </p>
+          </div>
+          <span className="text-xs text-muted-foreground">
+            {checked.filter(Boolean).length}/{missions.length}
+          </span>
         </div>
         <div className="flex flex-col gap-2.5">
-          {missions.map((m, i) => (
+          {missions.map((mission, index) => (
             <button
-              key={m.title}
-              onClick={() => toggle(i)}
-              disabled={checked[i]}
-              className={`w-full flex items-start gap-3 p-4 rounded-2xl border text-left transition ${
-                checked[i]
-                  ? "bg-card/40 border-border/60 opacity-70"
-                  : "bg-card border-border hover:border-primary hover:neon-border"
+              key={mission.id}
+              onClick={() => toggle(index)}
+              disabled={checked[index]}
+              className={`flex w-full items-start gap-3 rounded-2xl border p-4 text-left transition ${
+                checked[index]
+                  ? "border-border/60 bg-card/40 opacity-70"
+                  : "border-border bg-card hover:border-primary hover:neon-border"
               }`}
             >
               <div
-                className="shrink-0 mt-0.5 w-6 h-6 rounded-md border-2 grid place-items-center transition"
+                className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-md border-2 transition"
                 style={{
-                  borderColor: checked[i] ? `var(--${info.color})` : "var(--border)",
-                  background: checked[i] ? `var(--${info.color})` : "transparent",
+                  borderColor: checked[index] ? `var(--${info.color})` : "var(--border)",
+                  background: checked[index] ? `var(--${info.color})` : "transparent",
                 }}
               >
-                {checked[i] && <Check className="w-4 h-4 text-black" strokeWidth={3} />}
+                {checked[index] && <Check className="h-4 w-4 text-black" strokeWidth={3} />}
               </div>
               <div className="flex-1">
-                <p className={`font-semibold text-sm ${checked[i] ? "line-through" : ""}`}>
-                  {m.title}
+                <p className={`text-sm font-semibold ${checked[index] ? "line-through" : ""}`}>
+                  {mission.title}
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">{m.desc}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{mission.desc}</p>
               </div>
               <span
-                className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded"
+                className="shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold"
                 style={{
-                  background: `color-mix(in oklab, var(--xp) 20%, transparent)`,
-                  color: `var(--xp)`,
+                  background: "color-mix(in oklab, var(--xp) 20%, transparent)",
+                  color: "var(--xp)",
                 }}
               >
-                +{xpPerMission} XP
+                +{mission.xp} XP
+                <br />+{mission.coins} 🪙
               </span>
             </button>
           ))}
         </div>
-
-        <div className="hidden mt-6 p-4 rounded-2xl bg-card/60 border border-dashed border-border">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-            Atributos do Levelmon
-          </p>
-          <div className="space-y-2">
-            {info.stats.slice(0, 3).map((s) => (
-              <RpgBar key={s.label} label={s.label} value={s.value} color={info.color} />
-            ))}
-          </div>
-        </div>
       </div>
 
-      {/* Bottom nav */}
-      <nav className="absolute bottom-0 left-0 right-0 bg-card/90 backdrop-blur-xl border-t border-border">
-        <div className="grid grid-cols-4 h-16">
+      <nav className="absolute bottom-0 left-0 right-0 border-t border-border bg-card/90 backdrop-blur-xl">
+        <div className="grid h-16 grid-cols-4">
           {[
             { Icon: Home, label: "Início", active: true },
             { Icon: ListChecks, label: "Missões" },
@@ -246,43 +184,43 @@ export function DashboardScreen({
                 active ? "text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Icon className="w-5 h-5" />
+              <Icon className="h-5 w-5" />
               <span>{label}</span>
             </button>
           ))}
         </div>
       </nav>
 
-      {/* Level up modal */}
       {showLevelUp && (
-        <div className="absolute inset-0 z-30 grid place-items-center bg-black/70 backdrop-blur-sm p-6 animate-in fade-in duration-300">
-          <div className="w-full max-w-sm rounded-3xl bg-card border-2 border-primary neon-border p-6 text-center relative animate-in zoom-in-95 duration-300">
+        <div className="absolute inset-0 z-30 grid place-items-center bg-black/70 p-6 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="relative w-full max-w-sm rounded-3xl border-2 border-primary bg-card p-6 text-center neon-border animate-in zoom-in-95 duration-300">
             <button
               onClick={() => setShowLevelUp(false)}
-              className="absolute top-3 right-3 w-8 h-8 rounded-full grid place-items-center text-muted-foreground hover:text-foreground hover:bg-secondary"
+              className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
-            <div className="flex justify-center mb-2 text-primary">
-              <PartyPopper className="w-10 h-10" />
+            <div className="mb-2 flex justify-center text-primary">
+              <PartyPopper className="h-10 w-10" />
             </div>
             <h2
               className="text-2xl font-bold text-primary"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              LEVEL UP!
+              EVOLUÇÃO!
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              {levelmonName} evoluiu para <b className="text-foreground">Lvl {level}</b>.
+              {levelmonName} evoluiu para{" "}
+              <b className="text-foreground">{STAGE_LABELS[currentStage]}</b>!
               <br />
-              Seu monstro ganhou poder!
+              Seu monstro ganhou novas habilidades.
             </p>
-            <div className="mt-4 flex justify-center" style={{ color: `var(--${info.color})` }}>
-              <MonsterAvatar classId={classId} stage={stage} size={110} />
+            <div className="mt-4 flex justify-center">
+              <MonsterAvatar classId={classId} stage={currentStage} size={150} />
             </div>
             <button
               onClick={() => setShowLevelUp(false)}
-              className="mt-5 w-full h-11 rounded-xl bg-primary text-primary-foreground font-semibold hover:brightness-110 transition"
+              className="mt-5 h-11 w-full rounded-xl bg-primary font-semibold text-primary-foreground transition hover:brightness-110"
             >
               Continuar a aventura
             </button>
@@ -297,7 +235,7 @@ export function DashboardScreen({
           onCollect={() => {
             setBuffActive(true);
             setShowDaily(false);
-            toast.success("BUFF de +20% XP ativado! ⚡");
+            toast.success("Buff de +20% XP ativado!");
           }}
         />
       )}

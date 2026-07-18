@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CLASSES, type ClassId } from "@/lib/levelmon";
+import { CLASSES, getMissions, TIER_META, CLASS_TIER_EMOJI, type ClassId, type Tier } from "@/lib/levelmon";
 import { MonsterAvatar } from "@/components/MonsterAvatar";
 import { RpgBar } from "@/components/RpgBar";
 import { DailyCheckInModal } from "@/components/DailyCheckInModal";
@@ -9,14 +9,18 @@ import { Check, Flame, Home, ListChecks, Globe2, User, X, PartyPopper, Zap } fro
 interface Props {
   classId: ClassId;
   levelmonName: string;
+  tier: Tier;
+  conditioningIndex: number;
   onReset: () => void;
 }
 
 const BASE_XP_PER_MISSION = 33;
 const XP_MAX = 100;
 
-export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
+export function DashboardScreen({ classId, levelmonName, tier, conditioningIndex, onReset }: Props) {
   const info = CLASSES[classId];
+  const missions = getMissions(classId, tier);
+  const tierMeta = TIER_META[tier];
   const [checked, setChecked] = useState<boolean[]>([false, false, false]);
   const [xp, setXp] = useState(0);
   const [level, setLevel] = useState(1);
@@ -26,7 +30,9 @@ export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
   const [buffActive, setBuffActive] = useState(false);
 
 
-  const xpPerMission = buffActive ? Math.round(BASE_XP_PER_MISSION * 1.2) : BASE_XP_PER_MISSION;
+  const tierXp = Math.round(BASE_XP_PER_MISSION * tierMeta.multiplier);
+  const xpPerMission = buffActive ? Math.round(tierXp * 1.2) : tierXp;
+
 
   function toggle(i: number) {
     if (checked[i]) return;
@@ -36,7 +42,7 @@ export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
     setXp((prev) => Math.min(XP_MAX, prev + xpPerMission));
     setPulse(true);
     setTimeout(() => setPulse(false), 800);
-    toast.success(`+${xpPerMission} XP — ${info.missions[i].title}`);
+    toast.success(`+${xpPerMission} XP — ${missions[i].title}`);
   }
 
 
@@ -66,6 +72,18 @@ export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
                   {info.name}
                 </p>
                 <h2 className="text-lg font-bold truncate">{levelmonName}</h2>
+                <div
+                  className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-widest font-bold border"
+                  style={{
+                    borderColor: `color-mix(in oklab, var(--${info.color}) 50%, transparent)`,
+                    background: `color-mix(in oklab, var(--${info.color}) 12%, transparent)`,
+                    color: `var(--${info.color})`,
+                  }}
+                  title={`Índice de condicionamento: ${conditioningIndex}/10`}
+                >
+                  Modo: {info.name} {tierMeta.label} {CLASS_TIER_EMOJI[classId]}
+                </div>
+
               </div>
               <div
                 className="text-xs px-2.5 py-1 rounded-md font-bold shrink-0"
@@ -112,7 +130,7 @@ export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
           </span>
         </div>
         <div className="flex flex-col gap-2.5">
-          {info.missions.map((m, i) => (
+          {missions.map((m, i) => (
             <button
               key={m.title}
               onClick={() => toggle(i)}

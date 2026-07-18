@@ -217,6 +217,19 @@ export function DashboardScreen({ classId, levelmonName, onReset }: Props) {
           </div>
         </div>
       )}
+
+      {showDaily && (
+        <DailyCheckInModal
+          currentDay={1}
+          onClose={() => setShowDaily(false)}
+          onCollect={() => {
+            setBuffActive(true);
+            setShowDaily(false);
+            toast.success("BUFF de +20% XP ativado! ⚡");
+          }}
+        />
+      )}
     </div>
   );
 }
+
